@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess: Basic Edition</title>
+<meta name="description" content="A two-player desktop chess board in Python and Tkinter. Move pieces by hand, with undo, flip, clocks and a move log.">
+<style>
+:root{
+  --bg:#1e1e1e; --panel:#2b2b2b; --line:#444; --text:#ececec; --muted:#a8a8a8;
+  --light:#f0d9b5; --dark:#b58863; --green:#00ff88; --link:#e0b97f;
+  --serif:Georgia,"Times New Roman",serif; --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.65 var(--sans)}
+a{color:var(--link)}
+a:focus-visible,summary:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px}
+header{padding:72px 0 40px}
+h1{font:700 clamp(2.4rem,6vw,4.2rem)/1.05 var(--serif);margin:0 0 20px;letter-spacing:-.01em}
+.lead{max-width:34em;font-size:1.2rem;color:#d6d6d6;margin:0 0 28px}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-block;padding:11px 20px;border-radius:4px;background:var(--light);color:#2a1d10;font-weight:600;text-decoration:none}
+.btn.alt{background:transparent;color:var(--text);border:1px solid #666}
+.btn:hover{filter:brightness(1.08)}
+.board{height:32px;background:
+  repeating-conic-gradient(var(--dark) 0 25%,var(--light) 0 50%) 0 0/64px 64px;
+  border-block:2px solid #000}
+.shot{margin:56px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.shot img{display:block;width:100%;height:auto;max-width:640px;margin:0 auto}
+.shot figcaption{padding:12px 18px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+section{padding:56px 0 0}
+h2{font:700 1.8rem/1.2 var(--serif);margin:0 0 16px}
+p{max-width:40em;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px 40px;margin-top:24px}
+.grid h3{font:700 1.1rem var(--serif);margin:0 0 6px;color:var(--light)}
+.grid p{margin:0;color:#cfcfcf;font-size:.97rem}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:10px 24px;max-width:44em;margin:20px 0 0}
+dt{font-weight:600;color:var(--light)}
+dd{margin:0;color:#d0d0d0}
+pre{background:#111;border:1px solid var(--line);border-radius:4px;padding:16px 18px;overflow-x:auto;font:.9rem/1.6 var(--mono);color:var(--green);max-width:100%}
+code{font-family:var(--mono);font-size:.92em;background:#2f2f2f;padding:1px 6px;border-radius:3px}
+pre code{background:none;padding:0}
+.log{max-width:22em}
+.note{border-left:4px solid var(--dark);padding:4px 0 4px 18px;max-width:40em}
+.note p{margin:0 0 8px}
+footer{margin-top:72px;padding:28px 0 48px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+@media (max-width:560px){dl{grid-template-columns:1fr;gap:2px}dd{margin-bottom:12px}header{padding-top:48px}}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <h1>Chess: Basic Edition</h1>
+  <p class="lead">A two-player chess board for your desktop, written in Python. Pick up a piece, put it down anywhere, and play the way you would on a real board at a table.</p>
+  <div class="btns">
+    <a class="btn" href="https://cloudbv.itch.io/chess-basic">Play it on itch.io</a>
+    <a class="btn alt" href="#run">Run it yourself</a>
+  </div>
+</header>
+
+<div class="board" role="presentation"></div>
+
+<main class="wrap">
+
+  <figure class="shot">
+    <img src="screenshot.png" alt="The chess board mid-game, with the sidebar showing captured pieces, the piece bank and the move log">
+    <figcaption>A game in progress: the highlighted squares show the last move, and the sidebar tracks captures and the move log.</figcaption>
+  </figure>
+
+  <section>
+    <h2>What it is</h2>
+    <p>Chess: Basic Edition is a single-file Tkinter app that puts a digital chess board in front of two people sharing one screen. It sets up the standard starting position and then gets out of the way.</p>
+    <p>It does not enforce the rules. Any piece can go to any square, so players agree on legality themselves, just like with a wooden set. That also makes it handy for setting up puzzles, replaying positions, or teaching.</p>
+  </section>
+
+  <section>
+    <h2>Features</h2>
+    <div class="grid">
+      <div><h3>Pick up and put down</h3><p>Click a piece to lift it, then click a square to drop it. Landing on an occupied square captures that piece.</p></div>
+      <div><h3>Undo</h3><p>Steps back through every action, restoring the board, captures, move number, whose turn it is and both clocks.</p></div>
+      <div><h3>Flip the board</h3><p>View the game from Black's side. Rank and file labels flip with it, and clicks still map to the right squares.</p></div>
+      <div><h3>Clocks</h3><p>Each side has a count-up timer. Only the player to move is running, and their clock glows green.</p></div>
+      <div><h3>Captured pieces</h3><p>Everything each side has taken is listed in the sidebar, sorted from queen down to pawn.</p></div>
+      <div><h3>Piece bank</h3><p>Add any piece of either colour to any square, including extra kings and pawns. Good for custom positions.</p></div>
+      <div><h3>Move log</h3><p>A scrolling record of every move, such as <code>1. e2-e4</code>, with <code>x</code> for captures.</p></div>
+      <div><h3>Last-move highlight</h3><p>The squares a piece left and landed on are tinted so you can see what just happened.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How to play</h2>
+    <dl>
+      <dt>Move a piece</dt><dd>Click it, then click the destination. The turn passes to the other side.</dd>
+      <dt>Capture</dt><dd>Drop your piece on an opponent's piece. It goes into the captured list.</dd>
+      <dt>Remove a piece</dt><dd>While holding a piece, click outside the board to knock it off.</dd>
+      <dt>Add a piece</dt><dd>Click a piece in the "Add Piece" bank, then click a square.</dd>
+      <dt>Undo, Reset, Flip</dt><dd>Buttons along the bottom. Reset returns to the starting position and zeroes the clocks.</dd>
+    </dl>
+  </section>
+
+  <section id="run">
+    <h2>Run it</h2>
+    <p>You need Python 3 with Tkinter, which ships with the standard Python installers on Windows and macOS. There is nothing else to install.</p>
+<pre><code>git clone https://github.com/YOUR-USERNAME/YOUR-REPO.git
+cd YOUR-REPO
+python3 chess.py</code></pre>
+    <p>On some Linux distributions Tkinter is a separate package, for example <code>sudo apt install python3-tk</code> on Debian and Ubuntu.</p>
+  </section>
+
+  <section>
+    <h2>Make it yours</h2>
+    <p>Every colour and size lives in a block of constants at the top of the file, each with a comment. Change <code>SQUARE_SIZE</code> to resize the whole board, or swap the hex values to restyle it.</p>
+<pre><code>SQUARE_SIZE = 72
+COLOR_LIGHT = "#f0d9b5"
+COLOR_DARK  = "#b58863"
+COLOR_HELD  = "#7fc97f"</code></pre>
+  </section>
+
+  <section>
+    <h2>Good to know</h2>
+    <div class="note">
+      <p>There is no check, checkmate, castling or en passant logic, and no computer opponent. The app tracks positions, not rules.</p>
+      <p>The move log records what was moved and where, so it is a simple log rather than full algebraic notation.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  Made by Yosef Setiawan. <a href="https://cloudbv.itch.io/chess-basic">Chess: Basic Edition on itch.io</a>
+</footer>
+
+</body>
+</html>
